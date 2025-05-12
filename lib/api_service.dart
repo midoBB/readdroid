@@ -35,28 +35,6 @@ class ApiService {
     return false;
   }
 
-  Future<http.Response> getProfileData() async {
-    final token = authProvider.token;
-    if (token == null) {
-      throw Exception('No token found');
-    }
-
-    final url = Uri.parse('$baseUrl/api/profile');
-    final response = await http.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'accept': 'application/json',
-      },
-    );
-
-    if (response.statusCode == 401) {
-      await authProvider.setUnauthenticated();
-      throw Exception('Unauthorized');
-    }
-    return response;
-  }
-
   // --- BOOKMARKS API ---
 
   /// Get a paginated list of bookmarks (typed)
@@ -66,7 +44,7 @@ class ApiService {
     if (token == null) {
       throw Exception('No token found');
     }
-    var uri = Uri.parse('$baseUrl/api/bookmarks');
+    var uri = Uri.parse('$baseUrl/api/bookmarks?limit=1000');
     if (query != null) {
       final params = query.toQueryParams();
       if (params.isNotEmpty) {
@@ -175,5 +153,155 @@ class ApiService {
           'Failed to fetch bookmark article: ${response.statusCode}');
     }
   }
+// --- COUNT API ---
 
+  Future<int> getTotalBookmarkCount() async {
+    final token = authProvider.token;
+    if (token == null) {
+      throw Exception('No token found');
+    }
+    final url = Uri.parse('$baseUrl/api/bookmarks?limit=1');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'accept': 'application/json',
+      },
+    );
+    if (response.statusCode == 401) {
+      await authProvider.setUnauthenticated();
+      throw Exception('Unauthorized');
+    }
+    if (response.statusCode == 200) {
+      return int.parse(response.headers['total-count'] ?? '0');
+    } else {
+      throw Exception(
+          'Failed to fetch bookmark count: ${response.statusCode}');
+    }
+  }
+
+  Future<int> getUnreadBookmarkCount() async {
+    final token = authProvider.token;
+    if (token == null) {
+      throw Exception('No token found');
+    }
+    final url = Uri.parse('$baseUrl/api/bookmarks?limit=1&read_status=unread');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'accept': 'application/json',
+      },
+    );
+    if (response.statusCode == 401) {
+      await authProvider.setUnauthenticated();
+      throw Exception('Unauthorized');
+    }
+    if (response.statusCode == 200) {
+      return int.parse(response.headers['total-count'] ?? '0');
+    } else {
+      throw Exception(
+          'Failed to fetch bookmark count: ${response.statusCode}');
+    }
+  }
+
+  Future<int> getArchivedBookmarkCount() async {
+    final token = authProvider.token;
+    if (token == null) {
+      throw Exception('No token found');
+    }
+    final url = Uri.parse('$baseUrl/api/bookmarks?limit=1&is_archived=true');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'accept': 'application/json',
+      },
+    );
+    if (response.statusCode == 401) {
+      await authProvider.setUnauthenticated();
+      throw Exception('Unauthorized');
+    }
+    if (response.statusCode == 200) {
+      return int.parse(response.headers['total-count'] ?? '0');
+    } else {
+      throw Exception(
+          'Failed to fetch bookmark count: ${response.statusCode}');
+    }
+  }
+
+  Future<int> getFavoriteBookmarkCount() async {
+    final token = authProvider.token;
+    if (token == null) {
+      throw Exception('No token found');
+    }
+    final url = Uri.parse('$baseUrl/api/bookmarks?limit=1&is_marked=true');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'accept': 'application/json',
+      },
+    );
+    if (response.statusCode == 401) {
+      await authProvider.setUnauthenticated();
+      throw Exception('Unauthorized');
+    }
+    if (response.statusCode == 200) {
+      return int.parse(response.headers['total-count'] ?? '0');
+    } else {
+      throw Exception(
+          'Failed to fetch bookmark count: ${response.statusCode}');
+    }
+  }
+
+  Future<int> getVideoBookmarkCount() async {
+    final token = authProvider.token;
+    if (token == null) {
+      throw Exception('No token found');
+    }
+    final url = Uri.parse('$baseUrl/api/bookmarks?limit=1&type=video');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'accept': 'application/json',
+      },
+    );
+    if (response.statusCode == 401) {
+      await authProvider.setUnauthenticated();
+      throw Exception('Unauthorized');
+    }
+    if (response.statusCode == 200) {
+      return int.parse(response.headers['total-count'] ?? '0');
+    } else {
+      throw Exception(
+          'Failed to fetch bookmark count: ${response.statusCode}');
+    }
+  }
+
+  Future<int> getArticleBookmarkCount() async {
+    final token = authProvider.token;
+    if (token == null) {
+      throw Exception('No token found');
+    }
+    final url = Uri.parse('$baseUrl/api/bookmarks?limit=1&type=article');
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'accept': 'application/json',
+      },
+    );
+    if (response.statusCode == 401) {
+      await authProvider.setUnauthenticated();
+      throw Exception('Unauthorized');
+    }
+    if (response.statusCode == 200) {
+      return int.parse(response.headers['total-count'] ?? '0');
+    } else {
+      throw Exception(
+          'Failed to fetch bookmark count: ${response.statusCode}');
+    }
+  }
 }

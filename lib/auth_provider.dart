@@ -3,6 +3,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
+  bool _isLoading = true;
+
   String? _token;
   String? _serverAddress;
   final FlutterSecureStorage _storage = FlutterSecureStorage();
@@ -13,10 +15,15 @@ class AuthProvider with ChangeNotifier {
     _loadCredentials();
   }
 
+  bool get isLoading => _isLoading;
+
   Future<void> _loadCredentials() async {
+    _isLoading = true;
+    notifyListeners();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     _serverAddress = prefs.getString(_serverKey);
     _token = await _storage.read(key: _tokenKey);
+    _isLoading = false;
     notifyListeners();
   }
 

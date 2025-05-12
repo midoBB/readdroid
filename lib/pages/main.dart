@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:readeck/components/drawer.dart';
 import '../auth_provider.dart';
 import '../api_service.dart';
 import '../bookmark_models.dart';
+
+
 
 class Main extends StatelessWidget {
   const Main({super.key});
@@ -16,6 +19,7 @@ class Main extends StatelessWidget {
     );
 
     return Scaffold(
+      drawer: BookmarksDrawer(apiService: apiService),
       appBar: AppBar(
         title: Text('Read Later'),
         actions: [
