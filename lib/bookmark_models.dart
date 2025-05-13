@@ -294,3 +294,39 @@ class ReadeckIcon {
         "height": height,
       };
 }
+
+// Model for aggregated bookmark counts response
+class BookmarkCount {
+  final int archived;
+  final Map<String, int> byType;
+  final int marked;
+  final int total;
+  final int unread;
+
+  BookmarkCount({
+    required this.archived,
+    required this.byType,
+    required this.marked,
+    required this.total,
+    required this.unread,
+  });
+
+  factory BookmarkCount.fromJson(Map<String, dynamic> json) {
+    return BookmarkCount(
+      archived: json['archived'] as int,
+      byType: (json['by_type'] as Map<String, dynamic>)
+          .map((k, v) => MapEntry(k, v as int)),
+      marked: json['marked'] as int,
+      total: json['total'] as int,
+      unread: json['unread'] as int,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'archived': archived,
+        'by_type': byType,
+        'marked': marked,
+        'total': total,
+        'unread': unread,
+      };
+}

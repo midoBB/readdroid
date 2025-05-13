@@ -2,28 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fquery/fquery.dart';
 import 'package:readeck/api_service.dart';
+import 'package:readeck/bookmark_models.dart';
 
 class BookmarksDrawer extends HookWidget {
   final ApiService apiService;
-  const BookmarksDrawer({super.key, required this.apiService});
+  final void Function(BookmarkQuery)? onQueryChanged;
+  final BookmarkQuery? selectedQuery;
+  const BookmarksDrawer({super.key, required this.apiService, this.onQueryChanged, this.selectedQuery});
 
   @override
   Widget build(BuildContext context) {
-    final totalCount =
-        useQuery(["totalCount"], apiService.getTotalBookmarkCount);
-    final unreadCount =
-        useQuery(["unreadCount"], apiService.getUnreadBookmarkCount);
-    final archiveCount =
-        useQuery(["archiveCount"], apiService.getArchivedBookmarkCount);
-    final favoritesCount =
-        useQuery(["favoritesCount"], apiService.getFavoriteBookmarkCount);
-    final articlesCount =
-        useQuery(["articlesCount"], apiService.getArticleBookmarkCount);
-    final videosCount =
-        useQuery(["videosCount"], apiService.getVideoBookmarkCount);
-    return Drawer(
-      child: Container(
-        color: const Color(0xFF2C353A), // dark background
+    final allCounts =
+        useQuery(["counts"], apiService.getBookmarkCount);
+    
+      return Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
@@ -73,54 +65,77 @@ class BookmarksDrawer extends HookWidget {
               context,
               icon: Icons.library_books,
               label: 'All',
-              count: totalCount.data ?? 0,
-              loading: totalCount.isLoading,
-              selected: false,
+              count: allCounts.data?.total ?? 0,
+              loading: allCounts.isLoading,
+              selected: selectedQuery == null || (selectedQuery?.readStatus == null && selectedQuery?.isArchived != true && selectedQuery?.isMarked != true && selectedQuery?.type == null),
+              onTap: () {
+                onQueryChanged?.call(BookmarkQuery());
+                Navigator.pop(context);
+              },
             ),
             _drawerItem(
               context,
               icon: Icons.mark_email_unread,
               label: 'Unread',
-              count: unreadCount.data ?? 0,
-              loading: unreadCount.isLoading,
-              selected: true,
+              count: allCounts.data?.unread ?? 0,
+              loading: allCounts.isLoading,
+              selected: selectedQuery?.readStatus != null && selectedQuery!.readStatus!.contains("unread"),
+              onTap: () {
+                onQueryChanged?.call(BookmarkQuery(readStatus: ["unread"]));
+                Navigator.pop(context);
+              },
             ),
             _drawerItem(
               context,
               icon: Icons.archive,
               label: 'Archive',
-              count: archiveCount.data ?? 0,
-              loading: archiveCount.isLoading,
-              selected: false,
+              count: allCounts.data?.archived ?? 0,
+              loading: allCounts.isLoading,
+              selected: selectedQuery?.isArchived == true,
+              onTap: () {
+                onQueryChanged?.call(BookmarkQuery(isArchived: true));
+                Navigator.pop(context);
+              },
             ),
             _drawerItem(
               context,
               icon: Icons.favorite_border,
               label: 'Favorites',
-              count: favoritesCount.data ?? 0,
-              loading: favoritesCount.isLoading,
-              selected: false,
+              count: allCounts.data?.marked ?? 0,
+              loading: allCounts.isLoading,
+              selected: selectedQuery?.isMarked == true,
+              onTap: () {
+                onQueryChanged?.call(BookmarkQuery(isMarked: true));
+                Navigator.pop(context);
+              },
             ),
             _drawerItem(
               context,
               icon: Icons.article,
               label: 'Articles',
-              count: articlesCount.data ?? 0,
-              loading: articlesCount.isLoading,
-              selected: false,
+              count: allCounts.data?.byType['article'] ?? 0,
+              loading: allCounts.isLoading,
+              selected: selectedQuery?.type != null && selectedQuery!.type!.contains("article"),
+              onTap: () {
+                onQueryChanged?.call(BookmarkQuery(type: ["article"]));
+                Navigator.pop(context);
+              },
             ),
             _drawerItem(
               context,
               icon: Icons.ondemand_video,
               label: 'Videos',
-              count: videosCount.data ?? 0,
-              loading: videosCount.isLoading,
-              selected: false,
+              count: allCounts.data?.byType['video'] ?? 0,
+              loading: allCounts.isLoading,
+              selected: selectedQuery?.type != null && selectedQuery!.type!.contains("video"),
+              onTap: () {
+                onQueryChanged?.call(BookmarkQuery(type: ["video"]));
+                Navigator.pop(context);
+              },
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 }
 
@@ -131,6 +146,7 @@ Widget _drawerItem(
   int? count,
   bool loading = false,
   bool selected = false,
+  VoidCallback? onTap,
 }) {
   return Container(
     margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -180,10 +196,7 @@ Widget _drawerItem(
                   ),
                 )
               : null,
-      onTap: () {
-        // Handle navigation here
-        Navigator.pop(context);
-      },
+      onTap: onTap,
     ),
   );
 }
